@@ -1,19 +1,26 @@
 # Import statements
+import cv2
+import numpy as np
 import cv2 as cv
-import sys
 
-# Reading an image into python using OpenCV
+face_cascade = cv.CascadeClassifier("Classifiers/haarcascade_frontalface_alt.xml")
+eye_cascade = cv.CascadeClassifier("Classifiers/haarcascade_eye_tree_eyeglasses.xml")
 
-img = cv.imread(cv.samples.findFile("Images/pikachu.jfif"))  # Data is stored as cv::Mat
+img = cv.imread("Images/Ace.jpg")
+gray_img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
-# Check to see if the image was loaded correctly
-if img is None:
-    sys.exit("Could not find the image :(")
+faces = face_cascade.detectMultiScale(gray_img)
 
-# Display the image
-cv.imshow("Photo", img)
-k = cv.waitKey(0)  # "0" means wait forever
+for (x, y, w, h) in faces:
+    face_center = (x + w//2, y + h//2)
+    img = cv.ellipse(img, face_center, (w//2, h//2), 0, 0, 360, (255, 0, 0), 2)
+    roi_gray = gray_img[y:y + h, x:x + w]
+    roi_color = img[y:y + h, x:x + w]
+    eyes = eye_cascade.detectMultiScale(roi_gray)
 
-# Image is written to a file and the window is closed.
-if k == ord("s"):
-    cv.imwrite("Images/pikachu.png", img)  # Basically converted the image file into png
+    for (x1, y1, w1, h1) in eyes:
+        cv.rectangle(roi_color, (x1, y1), (x1+w1, y1+h1), (0,255,0), 2)
+    cv.imshow('ROCK', img)
+
+cv.waitKey(0)
+cv.destroyAllWindows()
